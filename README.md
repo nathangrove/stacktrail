@@ -1,6 +1,6 @@
-# StackTrail — Client Error Tracker (MVP)
+# StackTrail — Client Error Tracker
 
-StackTrail is the new name for this project (formerly "Client Error Tracker").
+StackTrail is the new name for this project.
 
 A minimal Sentry-like platform for client-side JavaScript errors.
 
