@@ -1,0 +1,26 @@
+http:
+  middlewares:
+    secure-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        stsSeconds: 63072000
+        stsIncludeSubdomains: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+    rate-limit:
+      rateLimit:
+        average: 20
+        burst: 30
+  routers:
+    http-to-https:
+      rule: "HostRegexp(`{host:.+}`) && (PathPrefix(`/`) || PathPrefix(`/api`))"
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true

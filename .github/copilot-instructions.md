@@ -1,0 +1,4 @@
+- Build a minimal error tracking platform (server + web + sdk) using TypeScript.
+- Keep UX minimal: a single dashboard view; avoid extra pages.
+- Prefer small, focused changes; do not add unrelated features.
+- Use workspace-relative links when referencing files in chat.

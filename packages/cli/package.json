@@ -1,0 +1,14 @@
+{
+  "name": "@stacktrail/cli",
+  "version": "0.1.0",
+  "description": "CLI helper to package and upload sourcemaps to StackTrail",
+  "type": "module",
+  "bin": {
+    "stacktrail": "bin/cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": ["bin/"],
+  "license": "MIT"
+}

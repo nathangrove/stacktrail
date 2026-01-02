@@ -1,0 +1,164 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+a { color: inherit; }
+
+:root {
+  color-scheme: light dark;
+  --border: color-mix(in srgb, CanvasText 18%, Canvas);
+  --borderSubtle: color-mix(in srgb, CanvasText 10%, Canvas);
+  --muted: color-mix(in srgb, CanvasText 55%, Canvas);
+  --selectedBg: color-mix(in srgb, Highlight 8%, Canvas);
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+  /* Remove centered max-width so content aligns with the app drawer
+     and takes the available width. Keep a small right padding but
+     remove left padding so the content sits flush with the layout. */
+  padding: 12px 12px 12px 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    margin: 0 8px;
+  }
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  z-index: 1000;
+}
+.modal {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  width: 720px;
+  max-width: calc(100% - 32px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.modalHeader {
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.modalBody {
+  max-height: 60vh;
+  overflow: auto;
+}
+
+/* Slightly more breathable header controls */
+.header .controls { display:flex; gap: 8px; align-items:center; }
+
+.panel {
+  border-radius: 8px;
+  /* Panels now use MUI Paper for elevation and padding; keep a subtle background for contrast */
+  background: color-mix(in srgb, Canvas 96%, Highlight);
+  padding: 0; /* Paper provides padding */
+}
+
+.header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* Top navigation bar (project selector and admin controls) */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--borderSubtle);
+  margin-bottom: 12px;
+}
+.navbar .left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.navbar .right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border-top: 1px solid var(--borderSubtle);
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.rowButton {
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.code {
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+}
+
+.input {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: Canvas;
+  color: CanvasText;
+}
+
+.button {
+  padding: 6px 10px;
+}
+
+.selectedRow {
+  background: var(--selectedBg);
+}
+
+.errorBox {
+  border: 1px solid var(--border);
+  background: var(--selectedBg);
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}

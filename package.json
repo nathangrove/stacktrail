@@ -1,0 +1,17 @@
+{
+  "name": "client-error-tracker",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c cyan,magenta \"npm -w @stacktrail/server run dev\" \"npm -w @stacktrail/web run dev\"",
+    "build": "npm -w @stacktrail/sdk run build && npm -w @stacktrail/server run build && npm -w @stacktrail/web run build && rm -rf dist && mkdir -p dist && cp -R packages/server/dist/* dist/ && cp packages/server/package.json dist/package.json && rm -rf dist/public && mkdir -p dist/public && cp -R packages/web/dist/* dist/public",
+    "typecheck": "npm -w @stacktrail/sdk run typecheck && npm -w @stacktrail/server run typecheck && npm -w @stacktrail/web run typecheck",
+    "e2e": "node scripts/e2e/run-e2e.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "playwright": "^1.45.0"
+  }
+}

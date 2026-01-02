@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackTrail - HTML Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .error-section {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #e74c3c;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.danger {
+            background: #e74c3c;
+        }
+        button.danger:hover {
+            background: #c0392b;
+        }
+        button.success {
+            background: #27ae60;
+        }
+        button.success:hover {
+            background: #229954;
+        }
+        .code {
+            background: #f8f8f8;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .config-form {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .config-field {
+            margin-bottom: 15px;
+        }
+        .config-field label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .config-field input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        .config-field input[readonly] {
+            background: #f8f8f8;
+            color: #666;
+        }
+        .config-field input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 StackTrail - HTML Demo</h1>
+
+    <div class="container">
+        <h2>SDK Configuration</h2>
+        <p>Configure which project to send errors to. Create projects in the dashboard first.</p>
+
+        <div class="config-form">
+            <div class="config-field">
+                <label for="dsn">DSN:</label>
+                <input type="text" id="dsn" value="http://localhost:4000/api/events" readonly>
+            </div>
+
+            <div class="config-field">
+                <label for="projectKey">Project Key:</label>
+                <input type="text" id="projectKey" value="demo" placeholder="Enter project key">
+            </div>
+
+            <div class="config-field">
+                <label for="ingestKey">Ingest Key (optional):</label>
+                <input type="text" id="ingestKey" placeholder="Leave empty for demo">
+            </div>
+
+            <button onclick="updateConfiguration()" class="success">Update Configuration</button>
+        </div>
+
+        <div class="code" id="currentConfig">
+            Current: DSN: http://localhost:4000/api/events | Project: demo | Ingest Key: (none)
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Error Triggers</h2>
+        <p>Click these buttons to trigger different types of errors that will be automatically captured by the SDK:</p>
+
+        <div class="error-section">
+            <h3>Uncaught Exceptions</h3>
+            <button class="danger" onclick="triggerUncaughtError()">Throw Uncaught Error</button>
+            <button class="danger" onclick="triggerReferenceError()">Reference Error</button>
+            <button class="danger" onclick="triggerTypeError()">Type Error</button>
+            <p>These will trigger the global error handler and be sent to StackTrail.</p>
+        </div>
+
+        <div class="error-section">
+            <h3>Unhandled Promise Rejections</h3>
+            <button class="danger" onclick="triggerUnhandledRejection()">Unhandled Promise Rejection</button>
+            <button class="danger" onclick="triggerAsyncError()">Async Error</button>
+            <p>These will trigger the unhandledrejection handler.</p>
+        </div>
+
+        <div class="error-section">
+            <h3>Manual Error Reporting</h3>
+            <button onclick="captureCustomError()">Capture Custom Error</button>
+            <button onclick="captureException()">Capture Exception Object</button>
+            <button onclick="captureStringError()">Capture String Error</button>
+            <p>These use the SDK's manual capture methods.</p>
+        </div>
+
+        <div class="error-section">
+            <h3>Complex Scenarios</h3>
+            <button onclick="triggerNestedError()">Nested Error</button>
+            <button onclick="triggerEventListenerError()">Event Listener Error</button>
+            <button onclick="triggerTimeoutError()">Timeout Error</button>
+            <p>More complex error scenarios.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Instructions</h2>
+        <ol>
+            <li>Make sure the StackTrail server is running on <code>http://localhost:4000</code></li>
+            <li>Configure your project key and ingest key (optional) above</li>
+            <li>Create projects in the dashboard at <code>http://localhost:4000</code> if needed</li>
+            <li>Click any of the error buttons above</li>
+            <li>Check the server logs for the captured errors</li>
+            <li>View the errors in the web dashboard at <code>http://localhost:4000</code></li>
+        </ol>
+    </div>
+
+    <div id="status"></div>
+
+    <!-- Load the StackTrail SDK -->
+    <script type="module">
+        import { initClientErrorTracker } from './index.js';
+
+        // Global tracker variable
+        let tracker = null;
+
+        // Initialize with default configuration
+        initializeTracker();
+
+        function initializeTracker() {
+            const dsn = document.getElementById('dsn').value;
+            const projectKey = document.getElementById('projectKey').value;
+            const ingestKey = document.getElementById('ingestKey').value;
+
+            // Clean up previous tracker if it exists
+            if (tracker) {
+                // Note: The SDK doesn't provide a cleanup method, but we can re-initialize
+                console.log('Re-initializing tracker with new configuration');
+            }
+
+            const config = {
+                dsn: dsn,
+                projectKey: projectKey
+            };
+
+            if (ingestKey.trim()) {
+                config.ingestKey = ingestKey.trim();
+            }
+
+            tracker = initClientErrorTracker(config);
+            updateConfigDisplay();
+            showStatus('Configuration updated!', 'success');
+        }
+
+        // Make functions global
+        window.initializeTracker = initializeTracker;
+        window.updateConfiguration = function() {
+            const projectKey = document.getElementById('projectKey').value.trim();
+            if (!projectKey) {
+                showStatus('Project key is required!', 'error');
+                return;
+            }
+            initializeTracker();
+        };
+
+        function updateConfigDisplay() {
+            const dsn = document.getElementById('dsn').value;
+            const projectKey = document.getElementById('projectKey').value;
+            const ingestKey = document.getElementById('ingestKey').value;
+
+            const ingestKeyDisplay = ingestKey.trim() ? ingestKey : '(none)';
+            document.getElementById('currentConfig').innerHTML =
+                `Current: DSN: ${dsn} | Project: ${projectKey} | Ingest Key: ${ingestKeyDisplay}`;
+        }
+
+        // Initialize config display
+        updateConfigDisplay();
+
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => status.innerHTML = '', 3000);
+        }
+
+        // Error trigger functions
+        window.triggerUncaughtError = function() {
+            showStatus('Triggering uncaught error...', 'error');
+            throw new Error('This is a manually triggered uncaught error!');
+        };
+
+        window.triggerReferenceError = function() {
+            showStatus('Triggering reference error...', 'error');
+            // This will cause a ReferenceError
+            nonexistentVariable.someMethod();
+        };
+
+        window.triggerTypeError = function() {
+            showStatus('Triggering type error...', 'error');
+            // This will cause a TypeError
+            null.someMethod();
+        };
+
+        window.triggerUnhandledRejection = function() {
+            showStatus('Triggering unhandled promise rejection...', 'error');
+            Promise.reject(new Error('This promise was rejected but not caught!'));
+        };
+
+        window.triggerAsyncError = function() {
+            showStatus('Triggering async error...', 'error');
+            setTimeout(() => {
+                throw new Error('Error thrown in setTimeout!');
+            }, 100);
+        };
+
+        window.captureCustomError = function() {
+            if (!tracker) {
+                showStatus('Tracker not initialized!', 'error');
+                return;
+            }
+            showStatus('Capturing custom error...');
+            tracker.captureException(new Error('This is a custom captured error with additional context'));
+        };
+
+        window.captureException = function() {
+            if (!tracker) {
+                showStatus('Tracker not initialized!', 'error');
+                return;
+            }
+            showStatus('Capturing exception object...');
+            try {
+                JSON.parse('{invalid json}');
+            } catch (e) {
+                tracker.captureException(e);
+            }
+        };
+
+        window.captureStringError = function() {
+            if (!tracker) {
+                showStatus('Tracker not initialized!', 'error');
+                return;
+            }
+            showStatus('Capturing string error...');
+            tracker.captureException('This is just a string error message');
+        };
+
+        window.triggerNestedError = function() {
+            showStatus('Triggering nested error...', 'error');
+            function level1() {
+                level2();
+            }
+            function level2() {
+                level3();
+            }
+            function level3() {
+                throw new Error('Deeply nested error with stack trace');
+            }
+            level1();
+        };
+
+        window.triggerEventListenerError = function() {
+            showStatus('Triggering event listener error...', 'error');
+            // Add a temporary button that will cause an error when clicked
+            const btn = document.createElement('button');
+            btn.textContent = 'Click me to cause error!';
+            btn.onclick = () => {
+                throw new Error('Error in event listener!');
+            };
+            document.body.appendChild(btn);
+            setTimeout(() => document.body.removeChild(btn), 2000);
+        };
+
+        window.triggerTimeoutError = function() {
+            showStatus('Triggering timeout error...', 'error');
+            setTimeout(() => {
+                // Simulate an error in an async operation
+                fetch('http://nonexistent-domain-that-will-fail.com')
+                    .then(() => {
+                        throw new Error('This should not execute');
+                    })
+                    .catch(e => {
+                        throw new Error(`Network error: ${e.message}`);
+                    });
+            }, 500);
+        };
+
+        showStatus('SDK initialized and ready!', 'success');
+    </script>
+</body>
+</html>
