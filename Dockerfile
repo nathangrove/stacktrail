@@ -1,8 +1,19 @@
 # Multi-stage Dockerfile
 # Stage 1: builder - install deps and build the repository
-FROM node:24 AS builder
+FROM node:18 AS builder
 
 WORKDIR /app
+
+# Install OS build deps required for native modules like better-sqlite3
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  python3 \
+  python3-dev \
+  pkg-config \
+  libsqlite3-dev \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/* \
+  && ln -sf /usr/bin/python3 /usr/bin/python
 
 # Copy lockfiles and package manifests to leverage Docker cache
 COPY package.json package-lock.json ./
@@ -15,21 +26,26 @@ RUN npm ci
 # Build SDK, server and web (produces top-level dist/)
 RUN npm run build
 
+# Remove dev deps so node_modules contains only production deps for runtime
+RUN npm prune --production
+
 # Stage 2: runtime - small image with only production deps + built artifacts
-FROM node:24-slim AS runtime
+FROM node:18-slim AS runtime
 
 WORKDIR /app
 
-# Copy server package metadata and install production deps only
-COPY packages/server/package.json ./package.json
-RUN npm ci --omit=dev
-
-# Copy built artifacts from builder
+# Copy production node_modules and server package metadata from builder
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./
+COPY packages/server/package.json ./package.json
 
 ENV NODE_ENV=production
 ENV PORT=4000
+ENV SQLITE_DB_PATH=/app/data/data.db
 EXPOSE 4000
+
+# Ensure the runtime process can write to the data and public folders
+RUN mkdir -p /app/data && chown -R node:node /app/data /app/public
 
 # Run as unprivileged node user from official image
 USER node
