@@ -4,6 +4,7 @@ import './App.css'
 
 function App() {
   const [status, setStatus] = useState<string>('')
+  const [dsn, setDsn] = useState<string>('http://localhost:4000/api/events')
   const [projectKey, setProjectKey] = useState<string>('react-demo')
   const [ingestKey, setIngestKey] = useState<string>('')
   const [tracker, setTracker] = useState<any>(null)
@@ -20,7 +21,7 @@ function App() {
     }
 
     const config: any = {
-      dsn: 'http://localhost:4000/api/events',
+      dsn: dsn.trim() || 'http://localhost:4000/api/events',
       projectKey: projectKey.trim()
     }
 
@@ -106,7 +107,7 @@ function App() {
           <div className="config-form">
             <div className="config-field">
               <label>DSN:</label>
-              <input type="text" value="http://localhost:4000/api/events" readOnly />
+              <input type="text" value={dsn} onChange={(e) => setDsn(e.target.value)} placeholder="http://localhost:4000/api/events" />
             </div>
             <div className="config-field">
               <label>Project Key:</label>

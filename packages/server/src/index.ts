@@ -6,6 +6,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import crypto from 'node:crypto';
 import { createProxyMiddleware } from "http-proxy-middleware";
+import mime from 'mime-types';
 import { openDb } from "./db.js";
 import type { Request, Response } from "express";
 
@@ -14,6 +15,9 @@ const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".
 dotenv.config({ path: path.join(serverRoot, ".env") });
 
 const app = express();
+
+// Disable X-Powered-By header to avoid leaking framework information
+app.disable('x-powered-by');
 
 // Never emit a Basic auth challenge header.
 // Browsers show a native credential prompt when they receive a 401 with WWW-Authenticate.
@@ -67,14 +71,23 @@ app.use(express.json({ limit: "10mb" }));
 
 // Cookie-based sessions for UI authentication
 import cookieSession from 'cookie-session';
+// Make cookie behavior configurable so dev/test setups (no TLS) work
+const sessionSecure = process.env.SESSION_SECURE !== undefined ? (process.env.SESSION_SECURE === 'true') : (process.env.NODE_ENV === 'production');
+// Trust proxy when explicitly configured so forwarded proto is respected in production
+if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') app.set('trust proxy', 1);
+
+// Session configuration: allow overriding maxAge and SameSite via env for testing
+const sessionMaxAge = process.env.SESSION_MAX_AGE_MS ? Number(process.env.SESSION_MAX_AGE_MS) : 24 * 60 * 60 * 1000; // default 1 day
+const sessionSameSite = process.env.SESSION_SAME_SITE ?? 'lax';
+
 app.use(cookieSession({
   name: 'stacktrail_session',
   // session secret defaults to env var or generated random value (not suitable for cluster without shared secret)
   secret: process.env.SESSION_SECRET ?? crypto.randomBytes(24).toString('hex'),
-  maxAge: 24 * 60 * 60 * 1000, // 1 day
+  maxAge: sessionMaxAge,
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax'
+  secure: sessionSecure,
+  sameSite: sessionSameSite as any
 }));
 
 const db = await openDb();
@@ -97,8 +110,11 @@ app.use(async (req, res, next) => {
 
   // If it's a UI route, require session-based auth (unless dev proxy is enabled)
   if (isUiRoute(req)) {
-    // Allow auth endpoints (login/logout/session) to be accessed without session
-    if (req.path.startsWith('/auth')) return next();
+    // Allow auth endpoints (login/logout/session) and the login page itself to be accessed without session
+    if (req.path.startsWith('/auth') || req.path === '/login') return next();
+
+    // Allow static assets (CSS/JS/images) to be served without authentication
+    if (req.path.startsWith('/assets') || req.path === '/favicon.ico') return next();
 
     // In dev with PROXY_WEB_DEV, keep UI open for vite HMR convenience
     if (process.env.PROXY_WEB_DEV === '1') return next();
@@ -192,9 +208,17 @@ function isBulkSourcemapUploadRoute(req: Request) {
 
 const webDist = path.resolve("./public");
 if (process.env.NODE_ENV === "production" && fs.existsSync(webDist)) {
-  app.use(express.static(webDist));
+  app.use(express.static(webDist, {
+    setHeaders(res, filePath) {
+      // Ensure correct Content-Type header for static assets (guard against mis-served files)
+      const contentType = mime.lookup(filePath);
+      if (contentType) res.setHeader('Content-Type', contentType);
+    }
+  }));
+
   app.get("*", (req, res) => {
     if (req.path.startsWith("/api") || req.path === "/health") return res.status(404).end();
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.sendFile(path.join(webDist, "index.html"));
   });
 }

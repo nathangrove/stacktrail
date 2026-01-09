@@ -45,7 +45,12 @@ ENV SQLITE_DB_PATH=/app/data/data.db
 EXPOSE 4000
 
 # Ensure the runtime process can write to the data and public folders
-RUN mkdir -p /app/data && chown -R node:node /app/data /app/public
+RUN mkdir -p /app/data /app/public && chown -R node:node /app/data /app/public
+
+# Install curl and netcat so healthchecks and TCP checks are possible
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl ca-certificates netcat-openbsd \
+  && rm -rf /var/lib/apt/lists/*
 
 # Run as unprivileged node user from official image
 USER node
@@ -53,5 +58,5 @@ USER node
 # Default command runs the built server (which serves built web from dist/public when SERVE_WEB=1)
 CMD ["node", "index.js"]
 
-# Optional healthcheck (uncomment if desired)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD wget -q -O- http://localhost:4000/health || exit 1
+# Healthcheck using curl
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s CMD curl --silent --fail --show-error --max-time 5 http://localhost:4000/health >/dev/null || exit 1

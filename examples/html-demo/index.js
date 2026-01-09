@@ -1,9 +1,9 @@
 // src/index.ts
-function initClientErrorTracker(config) {
+function initStackTrail(config) {
   const send = async (payload) => {
     try {
       const headers = { "content-type": "application/json" };
-      if (config.ingestKey) headers["X-CET-Ingest-Key"] = config.ingestKey;
+      if (config.ingestKey) headers["X-STACKTRAIL-Ingest-Key"] = config.ingestKey;
       if (config.authToken) headers.authorization = `Bearer ${config.authToken}`;
       await fetch(config.dsn, {
         method: "POST",
@@ -55,5 +55,5 @@ function initClientErrorTracker(config) {
   };
 }
 export {
-  initClientErrorTracker
+  initStackTrail
 };

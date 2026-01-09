@@ -1,0 +1,42 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: stacktrail
+      MYSQL_USER: stacktrail
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-stacktrail}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "1"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  stacktrail:
+    image: njgcm7/stacktrail:latest
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DB_TYPE=mysql
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=stacktrail
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-stacktrail}
+      - MYSQL_DATABASE=stacktrail
+      - STACKTRAIL_HOST=stacktrail.localhost
+      - SESSION_SECURE=false
+      - SESSION_SECRET=test-session-secret-please-change
+      - SESSION_SAME_SITE=lax
+      - SESSION_MAX_AGE_MS=86400000
+    depends_on:
+      - mysql
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail --show-error --max-time 5 http://localhost:4000/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5

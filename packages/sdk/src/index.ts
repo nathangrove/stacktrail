@@ -90,6 +90,3 @@ export function initStackTrail(config: ClientErrorTrackerInit) {
     }
   };
 }
-
-// Backwards compatibility alias
-export const initClientErrorTracker = initStackTrail;

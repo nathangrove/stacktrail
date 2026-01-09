@@ -12,6 +12,10 @@ http:
       rateLimit:
         average: 20
         burst: 30
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
   routers:
     http-to-https:
       rule: "HostRegexp(`{host:.+}`) && (PathPrefix(`/`) || PathPrefix(`/api`))"
@@ -19,8 +23,4 @@ http:
         - web
       middlewares:
         - redirect-to-https
-  middlewares:
-    redirect-to-https:
-      redirectScheme:
-        scheme: https
-        permanent: true
+      service: "noop@internal"
